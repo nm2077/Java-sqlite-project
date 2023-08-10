@@ -1,0 +1,94 @@
+import java.sql.*;
+
+
+public class LabProgram {
+
+    // Create a connection to a sqlite in-memory database
+    // Returns Connection object
+    public static Connection createConnection() {
+        try {
+            return DriverManager.getConnection("jdbc:sqlite::memory:");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            System.exit(-1);
+            return null;
+        }
+    }
+
+    // Create Horse table
+    // Parameter conn is database connection created in createConnection()
+    public static void createTable(Connection conn) {
+        try {
+            conn.prepareStatement("CREATE TABLE IF NOT EXISTS Horse (\n" +
+                    "                    Id INTEGER PRIMARY KEY NOT NULL,\n" +
+                    "                    Name  text,\n" +
+                    "                    Breed  text,\n" +
+                    "                    Height double,\n" +
+                    "                    BirthDate TEXT)").executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    // Insert row into Horse table using a parameterized query
+    // Parameter conn is database connection created in createConnection()
+    // Parameters id, name, breed, height, and birthDate contain values to be inserted
+    public static void insertHorse(Connection conn, int id, String name, String breed, double height, String birthDate) {
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("INSERT INTO Horse(Id, name,Breed,Height, BirthDate) VALUES(?,?,?,?,?)");
+            statement.setInt(1, id);
+            statement.setString(2, name);
+            statement.setString(3, breed);
+            statement.setDouble(4, height);
+            statement.setString(5, birthDate);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    // Select and print all rows of Horse table
+    // Parameter conn is database connection created in createConnection()
+    public static void selectAllHorses(Connection conn) {
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT * FROM Horse");
+            ResultSet results = statement.executeQuery();
+
+            System.out.println("All horses:");
+            while (results.next()) {
+                System.out.print("(");
+                System.out.print(results.getInt("Id"));
+                System.out.print(", '");
+                System.out.print(results.getString("name"));
+                System.out.print("', '");
+                System.out.print(results.getString("breed"));
+                System.out.print("', ");
+                System.out.print(results.getDouble("height"));
+                System.out.print(", '");
+                System.out.print(results.getString("birthDate"));
+                System.out.println("')");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+
+    // DO NOT MODIFY main
+    public static void main(String[] args) {
+
+        // Create connection to sqlite in-memory database
+        Connection conn = createConnection();
+
+        // Create Horse table
+        createTable(conn);
+
+        // Insert row into Horse table
+        insertHorse(conn, 1, "Babe", "Quarter Horse", 15.3, "2015-02-10");
+
+        // Select and print all Horse table rows
+        selectAllHorses(conn);
+    }
+}
